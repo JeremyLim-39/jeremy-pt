@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Jeremy Personal Trainer</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0a0e1a;
+  --card: #111827;
+  --card2: #1a2035;
+  --accent: #f97316;
+  --accent2: #3b82f6;
+  --green: #10b981;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --text: #f1f5f9;
+  --muted: #64748b;
+  --border: #1e293b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+/* AUTH */
+.auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(135deg, #0a0e1a 0%, #111827 100%); }
+.auth-box { background: var(–card); border: 1px solid var(–border); border-radius: 24px; padding: 40px 32px; width: 100%; max-width: 400px; }
+.auth-logo { text-align: center; margin-bottom: 32px; }
+.auth-logo .name { font-size: 22px; font-weight: 900; color: var(–accent); letter-spacing: -0.5px; }
+.auth-logo .sub { font-size: 13px; color: var(–muted); margin-top: 4px; }
+.auth-title { font-size: 20px; font-weight: 700; margin-bottom: 24px; text-align: center; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 13px; color: var(–muted); margin-bottom: 6px; font-weight: 600; }
+.form-group input, .form-group select, .form-group textarea {
+width: 100%; background: var(–card2); border: 1px solid var(–border);
+border-radius: 12px; padding: 12px 14px; color: var(–text);
+font-size: 14px; font-family: inherit; transition: border-color 0.2s;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(–accent); }
+.form-group textarea { resize: vertical; }
+.btn { width: 100%; padding: 13px; border-radius: 12px; border: none; cursor: pointer; font-weight: 700; font-size: 15px; font-family: inherit; transition: all 0.2s; }
+.btn-primary { background: var(–accent); color: #fff; }
+.btn-primary:hover { background: #ea6c0a; }
+.btn-primary:disabled { background: var(–muted); cursor: not-allowed; }
+.btn-secondary { background: var(–card2); color: var(–text); border: 1px solid var(–border); }
+.err { color: var(–red); font-size: 13px; margin-top: 10px; text-align: center; }
+.ok { color: var(–green); font-size: 13px; margin-top: 10px; text-align: center; }
+
+/* LAYOUT */
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+width: 240px; background: var(–card); border-right: 1px solid var(–border);
+padding: 24px 16px; display: flex; flex-direction: column; flex-shrink: 0;
+position: fixed; top: 0; left: 0; height: 100vh; z-index: 100;
+transition: transform 0.3s;
+}
+.sidebar-logo { margin-bottom: 32px; padding: 0 8px; }
+.sidebar-logo .name { font-size: 16px; font-weight: 900; color: var(–accent); }
+.sidebar-logo .user { font-size: 12px; color: var(–muted); margin-top: 2px; }
+.nav-item {
+display: flex; align-items: center; gap: 10px; padding: 11px 12px;
+border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600;
+color: var(–muted); transition: all 0.2s; margin-bottom: 4px; border: none;
+background: none; width: 100%; text-align: left;
+}
+.nav-item:hover { background: var(–card2); color: var(–text); }
+.nav-item.active { background: var(–accent); color: #fff; }
+.nav-item .icon { font-size: 18px; width: 24px; text-align: center; }
+.sidebar-bottom { margin-top: auto; }
+.main { margin-left: 240px; padding: 28px 24px; max-width: 960px; }
+.page-title { font-size: 24px; font-weight: 900; margin-bottom: 24px; }
+
+/* CARDS */
+.card { background: var(–card); border: 1px solid var(–border); border-radius: 20px; padding: 20px; }
+.card-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+.stat-card { background: var(–card); border: 1px solid var(–border); border-radius: 16px; padding: 16px; }
+.stat-icon { font-size: 24px; margin-bottom: 8px; }
+.stat-val { font-size: 22px; font-weight: 900; }
+.stat-lbl { font-size: 12px; color: var(–muted); margin-top: 2px; }
+
+/* FOOD LOG */
+.input-card { background: var(–card); border: 1px solid var(–border); border-radius: 20px; padding: 18px; margin-bottom: 16px; }
+.input-row { display: flex; gap: 10px; align-items: flex-end; margin-top: 12px; }
+textarea.food-input { width: 100%; background: var(–card2); border: 1px solid var(–border); border-radius: 12px; padding: 12px 14px; color: var(–text); font-size: 14px; font-family: inherit; resize: none; }
+textarea.food-input:focus { outline: none; border-color: var(–accent); }
+.btn-sm { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 13px; font-family: inherit; white-space: nowrap; }
+.btn-orange { background: var(–accent); color: #fff; }
+.btn-blue { background: var(–accent2); color: #fff; }
+.btn-gray { background: var(–card2); color: var(–muted); border: 1px solid var(–border); }
+.btn-red { background: var(–red); color: #fff; }
+.btn-green { background: var(–green); color: #fff; }
+.food-item { background: var(–card); border: 1px solid var(–border); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+.food-emoji { width: 42px; height: 42px; border-radius: 10px; background: var(–card2); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; overflow: hidden; }
+.food-emoji img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+.food-name { font-weight: 700; font-size: 14px; }
+.food-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 3px; }
+.food-meta span { font-size: 11px; color: var(–muted); }
+.food-meta .kcal { color: var(–yellow); font-weight: 600; }
+.food-time { font-size: 10px; color: var(–muted); }
+
+/* MACRO BARS */
+.macro-bar { margin-bottom: 12px; }
+.macro-bar-top { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px; }
+.macro-bar-top .lbl { color: var(–muted); }
+.macro-bar-top .val { font-weight: 600; }
+.bar-track { height: 8px; background: var(–border); border-radius: 99px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
+
+/* STUDENTS */
+.student-card { background: var(–card); border: 1px solid var(–border); border-radius: 16px; padding: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; }
+.avatar { width: 46px; height: 46px; border-radius: 50%; background: var(–accent); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 18px; color: #fff; flex-shrink: 0; }
+.student-name { font-weight: 700; font-size: 15px; }
+.student-email { font-size: 12px; color: var(–muted); }
+.badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; }
+.badge-green { background: #052e16; color: var(–green); }
+.badge-red { background: #2d0a0a; color: var(–red); }
+.badge-orange { background: #2d1500; color: var(–accent); }
+.student-actions { margin-left: auto; display: flex; gap: 8px; }
+
+/* MODAL */
+.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.modal { background: var(–card); border: 1px solid var(–border); border-radius: 24px; padding: 28px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+.modal-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+
+/* HAMBURGER */
+.hamburger { display: none; position: fixed; top: 16px; left: 16px; z-index: 300; background: var(–card); border: 1px solid var(–border); border-radius: 10px; padding: 10px; cursor: pointer; font-size: 18px; }
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+
+/* CHART */
+.chart-wrap { position: relative; height: 220px; }
+
+/* TABS */
+.tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.tab { padding: 9px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 13px; font-family: inherit; background: var(–card); color: var(–muted); transition: all 0.2s; }
+.tab.active { background: var(–accent); color: #fff; }
+
+/* EMPTY */
+.empty { text-align: center; padding: 48px 20px; color: var(–muted); }
+.empty .icon { font-size: 48px; margin-bottom: 12px; }
+
+/* IMAGE PREVIEW */
+.img-preview { position: relative; display: inline-block; margin-bottom: 10px; }
+.img-preview img { height: 80px; border-radius: 10px; object-fit: cover; display: block; }
+.img-remove { position: absolute; top: -6px; right: -6px; background: var(–red); border: none; border-radius: 50%; width: 22px; height: 22px; color: #fff; cursor: pointer; font-weight: 900; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+
+/* SPINNER */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+
+/* RESPONSIVE */
+@media (max-width: 700px) {
+.sidebar { transform: translateX(-100%); }
+.sidebar.open { transform: translateX(0); }
+.overlay.open { display: block; }
+.main { margin-left: 0; padding: 16px; padding-top: 60px; }
+.hamburger { display: flex; }
+.grid-2, .grid-3 { grid-template-columns: 1fr 1fr; }
+.page-title { font-size: 20px; }
+}
+@media (max-width: 420px) {
+.grid-3 { grid-template-columns: 1fr 1fr; }
+}
+
+/* DIVIDER */
+.divider { height: 1px; background: var(–border); margin: 20px 0; }
+
+/* INPUT ROW FLEX */
+.flex-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.flex-1 { flex: 1; }
+
+select option { background: #1a2035; }
+</style>
+
+</head>
+<body>
+
+<!-- HAMBURGER -->
+
+<button class="hamburger" id="hamburger" onclick="toggleSidebar()">☰</button>
+
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- AUTH PAGE -->
+
+<div id="authPage">
+  <div class="auth-wrap">
+    <div class="auth-box">
+      <div class="auth-logo">
+        <div class="name">💪 Jeremy Personal Trainer</div>
+        <div class="sub">Fitness & Nutrition Tracker</div>
+      </div>
+      <div id="loginForm">
+        <div class="auth-title">登录</div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" id="loginPassword" placeholder="••••••••">
+        </div>
+        <button class="btn btn-primary" onclick="login()" id="loginBtn">登录</button>
+        <p id="loginErr" class="err"></p>
+        <div class="divider"></div>
+        <p style="text-align:center;font-size:13px;color:var(--muted)">没有账号？<span style="color:var(--accent);cursor:pointer;font-weight:700" onclick="showRegister()">注册</span></p>
+      </div>
+      <div id="registerForm" style="display:none">
+        <div class="auth-title">注册账号</div>
+        <div class="form-group">
+          <label>全名</label>
+          <input type="text" id="regName" placeholder="你的名字">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="regEmail" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label>密码（至少6位）</label>
+          <input type="password" id="regPassword" placeholder="••••••••">
+        </div>
+        <button class="btn btn-primary" onclick="register()" id="regBtn">注册</button>
+        <p id="regMsg" class="err"></p>
+        <div class="divider"></div>
+        <p style="text-align:center;font-size:13px;color:var(--muted)">已有账号？<span style="color:var(--accent);cursor:pointer;font-weight:700" onclick="showLogin()">登录</span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+
+<div id="mainApp" style="display:none" class="app">
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="name">💪 Jeremy PT</div>
+      <div class="user" id="sidebarUser">Loading...</div>
+    </div>
+    <button class="nav-item active" id="nav-food" onclick="showPage('food')"><span class="icon">🥗</span> 食物记录</button>
+    <button class="nav-item" id="nav-stats" onclick="showPage('stats')"><span class="icon">📊</span> 营养统计</button>
+    <button class="nav-item" id="nav-body" onclick="showPage('body')"><span class="icon">💪</span> 身体数据</button>
+    <button class="nav-item admin-only" id="nav-students" onclick="showPage('students')" style="display:none"><span class="icon">👥</span> 学员管理</button>
+    <div class="sidebar-bottom">
+      <button class="nav-item" onclick="logout()"><span class="icon">🚪</span> 登出</button>
+    </div>
+  </div>
+
+  <!-- Main content -->
+
+  <div class="main">
+
+```
+<!-- FOOD PAGE -->
+<div id="page-food">
+  <div class="page-title">🥗 今日食物记录</div>
+  <div class="input-card">
+    <div id="foodImgPreview" style="display:none" class="img-preview">
+      <img id="foodImgEl" src="" alt="">
+      <button class="img-remove" onclick="removeFoodImg()">×</button>
+    </div>
+    <textarea class="food-input" id="foodText" rows="3" placeholder="描述你吃了什么，例如：一碗白米饭200g，烤鸡胸150g，两个鸡蛋…"></textarea>
+    <div class="input-row">
+      <button class="btn-sm btn-gray" onclick="document.getElementById('foodFile').click()">📷 上传照片</button>
+      <input type="file" id="foodFile" accept="image/*" style="display:none" onchange="handleFoodImg(event)">
+      <button class="btn-sm btn-orange" id="addFoodBtn" onclick="addFood()">✓ 添加</button>
+    </div>
+    <p id="foodStatus" style="font-size:12px;margin-top:8px;color:var(--green)"></p>
+  </div>
+  <div id="foodList"></div>
+</div>
+
+<!-- STATS PAGE -->
+<div id="page-stats" style="display:none">
+  <div class="page-title">📊 营养统计</div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">今日摄入目标</div>
+    <div class="macro-bar">
+      <div class="macro-bar-top"><span class="lbl">卡路里</span><span class="val"><span id="sCal">0</span> / 2000 kcal</span></div>
+      <div class="bar-track"><div class="bar-fill" id="bCal" style="width:0%;background:var(--yellow)"></div></div>
+    </div>
+    <div class="macro-bar">
+      <div class="macro-bar-top"><span class="lbl">蛋白质</span><span class="val"><span id="sPro">0</span> / 150g</span></div>
+      <div class="bar-track"><div class="bar-fill" id="bPro" style="width:0%;background:var(--green)"></div></div>
+    </div>
+    <div class="macro-bar">
+      <div class="macro-bar-top"><span class="lbl">碳水</span><span class="val"><span id="sCarb">0</span> / 200g</span></div>
+      <div class="bar-track"><div class="bar-fill" id="bCarb" style="width:0%;background:var(--accent2)"></div></div>
+    </div>
+    <div class="macro-bar">
+      <div class="macro-bar-top"><span class="lbl">脂肪</span><span class="val"><span id="sFat">0</span> / 65g</span></div>
+      <div class="bar-track"><div class="bar-fill" id="bFat" style="width:0%;background:var(--red)"></div></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-val" id="s2Cal" style="color:var(--yellow)">0</div><div class="stat-lbl">总卡路里 (kcal)</div></div>
+    <div class="stat-card"><div class="stat-icon">💪</div><div class="stat-val" id="s2Pro" style="color:var(--green)">0g</div><div class="stat-lbl">蛋白质</div></div>
+    <div class="stat-card"><div class="stat-icon">🍚</div><div class="stat-val" id="s2Carb" style="color:var(--accent2)">0g</div><div class="stat-lbl">碳水化合物</div></div>
+    <div class="stat-card"><div class="stat-icon">🥑</div><div class="stat-val" id="s2Fat" style="color:var(--red)">0g</div><div class="stat-lbl">脂肪</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">热量来源分布</div>
+    <div class="chart-wrap"><canvas id="macroChart"></canvas></div>
+  </div>
+</div>
+
+<!-- BODY PAGE -->
+<div id="page-body" style="display:none">
+  <div class="page-title">💪 身体数据</div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">更新今日数据</div>
+    <div class="grid-2">
+      <div class="form-group"><label>体重 (kg)</label><input type="number" id="bWeight" step="0.1" placeholder="70.0"></div>
+      <div class="form-group"><label>体脂肪 (kg)</label><input type="number" id="bFat" step="0.1" placeholder="10.0"></div>
+      <div class="form-group"><label>肌肉量 (kg)</label><input type="number" id="bMuscle" step="0.1" placeholder="50.0"></div>
+      <div class="form-group"><label>体脂率 (%)</label><input type="number" id="bFatRate" step="0.1" placeholder="15.0"></div>
+    </div>
+    <button class="btn btn-primary" onclick="saveBodyRecord()">💾 保存记录</button>
+    <p id="bodyStatus" style="font-size:12px;margin-top:8px;color:var(--green)"></p>
+  </div>
+  <div class="card">
+    <div class="card-title">进度图表</div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchBodyChart('weight',this)">体重</button>
+      <button class="tab" onclick="switchBodyChart('body_fat',this)">体脂肪</button>
+      <button class="tab" onclick="switchBodyChart('muscle_mass',this)">肌肉量</button>
+      <button class="tab" onclick="switchBodyChart('body_fat_rate',this)">体脂率</button>
+    </div>
+    <div class="chart-wrap"><canvas id="bodyChart"></canvas></div>
+  </div>
+</div>
+
+<!-- STUDENTS PAGE (admin only) -->
+<div id="page-students" style="display:none">
+  <div class="page-title">👥 学员管理</div>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+    <button class="btn-sm btn-orange" onclick="openAddStudent()">+ 添加学员</button>
+  </div>
+  <div id="studentList"></div>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- STUDENT DETAIL MODAL -->
+
+<div id="studentModal" class="modal-bg" style="display:none">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">学员详情</div>
+    <div class="grid-2">
+      <div class="form-group"><label>全名</label><input type="text" id="mName"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="mEmail" id="mEmail"></div>
+      <div class="form-group"><label>密码（新增时填）</label><input type="password" id="mPassword" placeholder="至少6位"></div>
+      <div class="form-group"><label>身高 (cm)</label><input type="number" id="mHeight" step="0.1"></div>
+      <div class="form-group"><label>年龄</label><input type="number" id="mAge"></div>
+      <div class="form-group"><label>体重 (kg)</label><input type="number" id="mWeight" step="0.1"></div>
+      <div class="form-group"><label>体脂肪 (kg)</label><input type="number" id="mBodyFat" step="0.1"></div>
+      <div class="form-group"><label>肌肉量 (kg)</label><input type="number" id="mMuscle" step="0.1"></div>
+      <div class="form-group"><label>体脂率 (%)</label><input type="number" id="mFatRate" step="0.1"></div>
+      <div class="form-group"><label>状态</label>
+        <select id="mActive">
+          <option value="true">✅ Active</option>
+          <option value="false">❌ Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>健康问题 / 备注</label><textarea id="mHealth" rows="3" placeholder="例如：膝盖旧伤，不能做深蹲..."></textarea></div>
+    <p id="modalErr" class="err"></p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" style="flex:2" id="modalSaveBtn" onclick="saveStudent()">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW STUDENT FOOD MODAL -->
+
+<div id="viewFoodModal" class="modal-bg" style="display:none">
+  <div class="modal">
+    <div class="modal-title">📋 <span id="viewFoodName"></span> 的今日记录</div>
+    <div id="viewFoodList"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeViewFood()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== CONFIG =====
+const SUPABASE_URL = 'https://dqwesoiqjiefgg.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_CwuyNUMgnxtQBFxVgvvM_Q_QZecLife';
+const ANTHROPIC_KEY = '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';
+const TRAINER_EMAIL = 'jeremyzukang@gmail.com';
+const GOALS = { calories: 2000, protein: 150, carbs: 200, fat: 65 };
+
+
+// Supabase REST API helpers
+let _token = null;
+let _refreshToken = null;
+
+async function sbAuth(endpoint, body) {
+  const r = await fetch(SUPABASE_URL + '/auth/v1/' + endpoint, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','apikey':SUPABASE_KEY},
+    body: JSON.stringify(body)
+  });
+  return r.json();
+}
+
+async function sbFrom(table) {
+  return {
+    async select(cols='*') { return this._q('GET', table, null, cols); },
+    _filters: [],
+    _col: '*',
+    _order: null,
+    _limit: null,
+    select(cols='*') { this._col=cols; return this; },
+    eq(col,val) { this._filters.push(col+'=eq.'+encodeURIComponent(val)); return this; },
+    neq(col,val) { this._filters.push(col+'=neq.'+encodeURIComponent(val)); return this; },
+    gte(col,val) { this._filters.push(col+'=gte.'+encodeURIComponent(val)); return this; },
+    order(col,{ascending}={}) { this._order=(ascending?col:col+'.desc'); return this; },
+    limit(n) { this._limit=n; return this; },
+    single() { this._single=true; return this; },
+    async then(resolve) {
+      let url = SUPABASE_URL+'/rest/v1/'+table+'?select='+this._col;
+      if(this._filters.length) url+='&'+this._filters.join('&');
+      if(this._order) url+='&order='+this._order;
+      if(this._limit) url+='&limit='+this._limit;
+      const headers = {'apikey':SUPABASE_KEY,'Content-Type':'application/json'};
+      if(_token) headers['Authorization']='Bearer '+_token;
+      if(this._single) headers['Accept']='application/vnd.pgrst.object+json';
+      const r = await fetch(url, {headers});
+      const data = await r.json();
+      resolve({data: data, error: r.ok ? null : data});
+    },
+    async insert(obj) {
+      const headers = {'apikey':SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'};
+      if(_token) headers['Authorization']='Bearer '+_token;
+      const r = await fetch(SUPABASE_URL+'/rest/v1/'+table, {method:'POST',headers,body:JSON.stringify(obj)});
+      return {error: r.ok ? null : await r.json()};
+    },
+    async upsert(obj) {
+      const headers = {'apikey':SUPABASE_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'};
+      if(_token) headers['Authorization']='Bearer '+_token;
+      const r = await fetch(SUPABASE_URL+'/rest/v1/'+table, {method:'POST',headers,body:JSON.stringify(obj)});
+      const data = await r.json();
+      return {data: Array.isArray(data)?data[0]:data, error: r.ok?null:data};
+    },
+    async update(obj) {
+      this._updateObj = obj; return this;
+    },
+    async delete() { this._isDelete=true; return this; },
+    async _exec(method, obj) {
+      let url = SUPABASE_URL+'/rest/v1/'+table+'?';
+      if(this._filters.length) url+=this._filters.join('&');
+      const headers = {'apikey':SUPABASE_KEY,'Content-Type':'application/json'};
+      if(_token) headers['Authorization']='Bearer '+_token;
+      const r = await fetch(url, {method,headers,body:obj?JSON.stringify(obj):undefined});
+      return {error: r.ok?null:await r.json()};
+    }
+  };
+}
+
+// Simplified sb object
+const sb = {
+  auth: {
+    async signUp({email,password}) {
+      const d = await sbAuth('signup', {email,password});
+      if(d.error) return {data:{},error:d.error};
+      _token = d.access_token; _refreshToken = d.refresh_token;
+      if(_token) localStorage.setItem('sb_token',_token);
+      if(_refreshToken) localStorage.setItem('sb_refresh',_refreshToken);
+      return {data:{user:d.user||{id:d.id,email}},error:null};
+    },
+    async signInWithPassword({email,password}) {
+      const d = await sbAuth('token?grant_type=password', {email,password});
+      if(d.error||d.error_description) return {data:{},error:{message:d.error_description||d.error}};
+      _token = d.access_token; _refreshToken = d.refresh_token;
+      localStorage.setItem('sb_token',_token);
+      localStorage.setItem('sb_refresh',_refreshToken);
+      return {data:{user:d.user},error:null};
+    },
+    async signOut() { _token=null; localStorage.removeItem('sb_token'); localStorage.removeItem('sb_refresh'); },
+    async getSession() {
+      const t = localStorage.getItem('sb_token');
+      if(!t) return {data:{session:null}};
+      _token = t;
+      // Verify token by fetching user
+      try {
+        const r = await fetch(SUPABASE_URL+'/auth/v1/user', {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+t}});
+        if(!r.ok) { localStorage.removeItem('sb_token'); return {data:{session:null}}; }
+        const user = await r.json();
+        return {data:{session:{user}}};
+      } catch(e) { return {data:{session:null}}; }
+    }
+  },
+  from(table) {
+    const obj = {
+      _table: table, _filters: [], _col: '*', _order: null, _limit: null, _single: false,
+      select(cols='*') { this._col=cols; return this; },
+      eq(col,val) { this._filters.push(col+'=eq.'+encodeURIComponent(val)); return this; },
+      neq(col,val) { this._filters.push(col+'=neq.'+encodeURIComponent(val)); return this; },
+      gte(col,val) { this._filters.push(col+'=gte.'+encodeURIComponent(val)); return this; },
+      order(col,opts={}) { this._order=opts.ascending===false?col+'.desc':col; return this; },
+      limit(n) { this._limit=n; return this; },
+      single() { this._single=true; return this; },
+      async _fetch() {
+        let url = SUPABASE_URL+'/rest/v1/'+this._table+'?select='+this._col;
+        if(this._filters.length) url+='&'+this._filters.join('&');
+        if(this._order) url+='&order='+this._order;
+        if(this._limit) url+='&limit='+this._limit;
+        const headers = {'apikey':SUPABASE_KEY,'Content-Type':'application/json'};
+        if(_token) headers['Authorization']='Bearer '+_token;
+        if(this._single) headers['Accept']='application/vnd.pgrst.object+json';
+        const r = await fetch(url, {headers});
+        const data = await r.json();
+        return {data, error: r.ok?null:data};
+      },
+      then(resolve,reject) { return this._fetch().then(resolve,reject); },
+      async insert(obj) {
+        const headers = {'apikey':SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'};
+        if(_token) headers['Authorization']='Bearer '+_token;
+        const r = await fetch(SUPABASE_URL+'/rest/v1/'+this._table, {method:'POST',headers,body:JSON.stringify(obj)});
+        return {error: r.ok?null:await r.json()};
+      },
+      async upsert(obj) {
+        const headers = {'apikey':SUPABASE_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'};
+        if(_token) headers['Authorization']='Bearer '+_token;
+        const r = await fetch(SUPABASE_URL+'/rest/v1/'+this._table, {method:'POST',headers,body:JSON.stringify(obj)});
+        const data = r.status===204?{}:await r.json();
+        return {data: Array.isArray(data)?data[0]:data, error: r.ok?null:data};
+      },
+      update(updateObj) {
+        const self = this;
+        return {
+          eq(col,val) { self._filters.push(col+'=eq.'+encodeURIComponent(val)); self._updateObj=updateObj; return self._doUpdate(); }
+        };
+      },
+      async _doUpdate() {
+        let url = SUPABASE_URL+'/rest/v1/'+this._table+'?';
+        if(this._filters.length) url+=this._filters.join('&');
+        const headers = {'apikey':SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'};
+        if(_token) headers['Authorization']='Bearer '+_token;
+        const r = await fetch(url, {method:'PATCH',headers,body:JSON.stringify(this._updateObj)});
+        return {error: r.ok?null:await r.json()};
+      },
+      delete() {
+        const self = this;
+        return {
+          eq(col,val) {
+            self._filters.push(col+'=eq.'+encodeURIComponent(val));
+            return self._doDelete();
+          }
+        };
+      },
+      async _doDelete() {
+        let url = SUPABASE_URL+'/rest/v1/'+this._table+'?';
+        if(this._filters.length) url+=this._filters.join('&');
+        const headers = {'apikey':SUPABASE_KEY,'Content-Type':'application/json'};
+        if(_token) headers['Authorization']='Bearer '+_token;
+        const r = await fetch(url, {method:'DELETE',headers});
+        return {error: r.ok?null:await r.json()};
+      }
+    };
+    return obj;
+  }
+};
+
+
+let currentUser = null;
+let currentProfile = null;
+let foodEntries = [];
+let bodyRecords = [];
+let macroChartInst = null;
+let bodyChartInst = null;
+let currentBodyMetric = 'weight';
+let editingStudentId = null;
+let pendingFoodImg = null;
+
+// ===== AUTH =====
+function showRegister() {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('registerForm').style.display = 'block';
+}
+function showLogin() {
+  document.getElementById('registerForm').style.display = 'none';
+  document.getElementById('loginForm').style.display = 'block';
+}
+
+async function login() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPassword').value;
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>登录中…';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    document.getElementById('loginErr').textContent = '登录失败：' + error.message;
+    btn.disabled = false; btn.textContent = '登录';
+  } else {
+    await initApp(data.user);
+  }
+}
+
+async function register() {
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass = document.getElementById('regPassword').value;
+  const msg = document.getElementById('regMsg');
+  if (!name || !email || !pass) { msg.textContent = '请填写所有字段'; return; }
+  const btn = document.getElementById('regBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>注册中…';
+  const { data, error } = await sb.auth.signUp({ email, password: pass });
+  if (error) {
+    msg.style.color = 'var(--red)'; msg.textContent = '注册失败：' + error.message;
+    btn.disabled = false; btn.textContent = '注册';
+    return;
+  }
+  if (data.user) {
+    const role = email === TRAINER_EMAIL ? 'trainer' : 'student';
+    await sb.from('profiles').upsert({
+      id: data.user.id, email, full_name: name, role,
+      is_active: true, created_at: new Date().toISOString()
+    });
+    msg.style.color = 'var(--green)';
+    msg.textContent = '注册成功！请登录。';
+    btn.disabled = false; btn.textContent = '注册';
+    setTimeout(showLogin, 1500);
+  }
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  location.reload();
+}
+
+// ===== INIT =====
+async function initApp(user) {
+  currentUser = user;
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  if (!profile) {
+    const role = user.email === TRAINER_EMAIL ? 'trainer' : 'student';
+    const { data: newProfile } = await sb.from('profiles').upsert({
+      id: user.id, email: user.email, full_name: user.email.split('@')[0],
+      role, is_active: true, created_at: new Date().toISOString()
+    }).select().single();
+    currentProfile = newProfile;
+  } else {
+    currentProfile = profile;
+  }
+
+  if (currentProfile && !currentProfile.is_active && currentProfile.role !== 'trainer') {
+    document.getElementById('authPage').innerHTML = `
+      <div class="auth-wrap"><div class="auth-box" style="text-align:center">
+        <div style="font-size:48px;margin-bottom:16px">🚫</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:8px">账号未激活</div>
+        <div style="color:var(--muted);font-size:14px">请联系 Jeremy 教练激活你的账号。</div>
+        <button class="btn btn-secondary" style="margin-top:20px" onclick="logout()">返回登录</button>
+      </div></div>`;
+    return;
+  }
+
+  document.getElementById('authPage').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'flex';
+  document.getElementById('sidebarUser').textContent = currentProfile?.full_name || user.email;
+
+  if (currentProfile?.role === 'trainer') {
+    document.getElementById('nav-students').style.display = 'flex';
+  }
+
+  await loadFoodEntries();
+  showPage('food');
+}
+
+// ===== PAGES =====
+function showPage(page) {
+  ['food','stats','body','students'].forEach(p => {
+    document.getElementById('page-'+p).style.display = p === page ? 'block' : 'none';
+    document.getElementById('nav-'+p)?.classList.toggle('active', p === page);
+  });
+  if (page === 'stats') updateStats();
+  if (page === 'body') { loadBodyRecords(); }
+  if (page === 'students') loadStudents();
+  if (window.innerWidth <= 700) closeSidebar();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// ===== FOOD =====
+async function loadFoodEntries() {
+  const today = new Date().toISOString().split('T')[0];
+  const { data } = await sb.from('food_logs')
+    .select('*').eq('user_id', currentUser.id)
+    .gte('logged_at', today + 'T00:00:00')
+    .order('logged_at', { ascending: false });
+  foodEntries = data || [];
+  renderFoodList();
+}
+
+function renderFoodList() {
+  const list = document.getElementById('foodList');
+  if (!foodEntries.length) {
+    list.innerHTML = `<div class="empty"><div class="icon">🥗</div><div style="font-weight:600">还没有记录</div><div style="font-size:13px;margin-top:6px">输入食物或上传照片开始记录</div></div>`;
+    return;
+  }
+  list.innerHTML = foodEntries.map(e => `
+    <div class="food-item">
+      <div class="food-emoji">${e.image_url ? `<img src="${e.image_url}" alt="">` : (e.name?.match(/[\u{1F300}-\u{1F9FF}]/u)?.[0] || '🍽️')}</div>
+      <div style="flex:1;min-width:0">
+        <div class="food-name">${e.name}</div>
+        <div class="food-meta">
+          <span class="kcal">${Math.round(e.calories)} kcal</span>
+          <span>蛋白质 ${Math.round(e.protein)}g</span>
+          <span>碳水 ${Math.round(e.carbs)}g</span>
+          <span>脂肪 ${Math.round(e.fat)}g</span>
+        </div>
+        <div class="food-time">${new Date(e.logged_at).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}</div>
+      </div>
+      <button class="btn-sm btn-gray" style="padding:6px 10px;font-size:18px;line-height:1" onclick="deleteFood('${e.id}')">×</button>
+    </div>`).join('');
+}
+
+function handleFoodImg(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    pendingFoodImg = { url: ev.target.result, base64: ev.target.result.split(',')[1], type: file.type };
+    document.getElementById('foodImgEl').src = ev.target.result;
+    document.getElementById('foodImgPreview').style.display = 'inline-block';
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function removeFoodImg() {
+  pendingFoodImg = null;
+  document.getElementById('foodImgPreview').style.display = 'none';
+  document.getElementById('foodImgEl').src = '';
+}
+
+async function addFood() {
+  const text = document.getElementById('foodText').value.trim();
+  if (!text && !pendingFoodImg) return;
+  const btn = document.getElementById('addFoodBtn');
+  const status = document.getElementById('foodStatus');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>分析中…';
+  status.textContent = ''; status.style.color = 'var(--green)';
+  try {
+    const content = [];
+    if (pendingFoodImg) content.push({ type:'image', source:{ type:'base64', media_type: pendingFoodImg.type, data: pendingFoodImg.base64 }});
+    content.push({ type:'text', text:`你是专业营养师。${pendingFoodImg?'识别图片中的食物，':''}${text?`食物：${text}。`:''}估算营养，只返回JSON：{"name":"食物名","calories":数字,"protein":数字,"carbs":数字,"fat":数字} 数字为整数。` });
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:300, messages:[{role:'user',content}] })
+    });
+    const d = await res.json();
+    const raw = d.content?.find(b=>b.type==='text')?.text || '';
+    const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    await sb.from('food_logs').insert({
+      user_id: currentUser.id,
+      name: parsed.name, calories: parsed.calories,
+      protein: parsed.protein, carbs: parsed.carbs, fat: parsed.fat,
+      image_url: pendingFoodImg?.url || null,
+      logged_at: new Date().toISOString()
+    });
+    document.getElementById('foodText').value = '';
+    removeFoodImg();
+    status.textContent = '✓ 已添加：' + parsed.name + ' (' + parsed.calories + ' kcal)';
+    await loadFoodEntries();
+  } catch(e) {
+    status.style.color = 'var(--red)';
+    status.textContent = '分析失败：' + e.message;
+  }
+  btn.disabled = false; btn.textContent = '✓ 添加';
+}
+
+async function deleteFood(id) {
+  await sb.from('food_logs').delete().eq('id', id);
+  await loadFoodEntries();
+}
+
+// ===== STATS =====
+function updateStats() {
+  const t = foodEntries.reduce((a,e)=>({
+    calories: a.calories+(e.calories||0), protein: a.protein+(e.protein||0),
+    carbs: a.carbs+(e.carbs||0), fat: a.fat+(e.fat||0)
+  }), {calories:0,protein:0,carbs:0,fat:0});
+  document.getElementById('sCal').textContent = Math.round(t.calories);
+  document.getElementById('sPro').textContent = Math.round(t.protein);
+  document.getElementById('sCarb').textContent = Math.round(t.carbs);
+  document.getElementById('sFat').textContent = Math.round(t.fat);
+  document.getElementById('s2Cal').textContent = Math.round(t.calories);
+  document.getElementById('s2Pro').textContent = Math.round(t.protein)+'g';
+  document.getElementById('s2Carb').textContent = Math.round(t.carbs)+'g';
+  document.getElementById('s2Fat').textContent = Math.round(t.fat)+'g';
+  document.getElementById('bCal').style.width = Math.min(t.calories/GOALS.calories*100,100)+'%';
+  document.getElementById('bPro').style.width = Math.min(t.protein/GOALS.protein*100,100)+'%';
+  document.getElementById('bCarb').style.width = Math.min(t.carbs/GOALS.carbs*100,100)+'%';
+  document.getElementById('bFat').style.width = Math.min(t.fat/GOALS.fat*100,100)+'%';
+  const pCal=t.protein*4, cCal=t.carbs*4, fCal=t.fat*9, tot=pCal+cCal+fCal||1;
+  if (macroChartInst) macroChartInst.destroy();
+  macroChartInst = new Chart(document.getElementById('macroChart'), {
+    type:'doughnut',
+    data:{ labels:['蛋白质','碳水','脂肪'], datasets:[{ data:[Math.round(pCal/tot*100),Math.round(cCal/tot*100),Math.round(fCal/tot*100)], backgroundColor:['#10b981','#3b82f6','#ef4444'], borderWidth:0 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#f1f5f9', font:{size:12} } } } }
+  });
+}
+
+// ===== BODY =====
+async function loadBodyRecords() {
+  const { data } = await sb.from('body_records').select('*').eq('user_id', currentUser.id).order('recorded_at', {ascending:true}).limit(30);
+  bodyRecords = data || [];
+  renderBodyChart(currentBodyMetric);
+  if (currentProfile) {
+    document.getElementById('bWeight').value = currentProfile.weight || '';
+    document.getElementById('bFat').value = currentProfile.body_fat || '';
+    document.getElementById('bMuscle').value = currentProfile.muscle_mass || '';
+    document.getElementById('bFatRate').value = currentProfile.body_fat_rate || '';
+  }
+}
+
+async function saveBodyRecord() {
+  const weight = parseFloat(document.getElementById('bWeight').value);
+  const body_fat = parseFloat(document.getElementById('bFat').value);
+  const muscle_mass = parseFloat(document.getElementById('bMuscle').value);
+  const body_fat_rate = parseFloat(document.getElementById('bFatRate').value);
+  const status = document.getElementById('bodyStatus');
+  await sb.from('body_records').insert({ user_id: currentUser.id, weight, body_fat, muscle_mass, body_fat_rate, recorded_at: new Date().toISOString() });
+  await sb.from('profiles').update({ weight, body_fat, muscle_mass, body_fat_rate }).eq('id', currentUser.id);
+  currentProfile = { ...currentProfile, weight, body_fat, muscle_mass, body_fat_rate };
+  status.textContent = '✓ 已保存！';
+  setTimeout(()=>status.textContent='', 2000);
+  await loadBodyRecords();
+}
+
+function switchBodyChart(metric, btn) {
+  document.querySelectorAll('#page-body .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  currentBodyMetric = metric;
+  renderBodyChart(metric);
+}
+
+const metricLabels = { weight:'体重 (kg)', body_fat:'体脂肪 (kg)', muscle_mass:'肌肉量 (kg)', body_fat_rate:'体脂率 (%)' };
+const metricColors = { weight:'#f97316', body_fat:'#ef4444', muscle_mass:'#10b981', body_fat_rate:'#3b82f6' };
+
+function renderBodyChart(metric) {
+  if (bodyChartInst) bodyChartInst.destroy();
+  const labels = bodyRecords.map(r => new Date(r.recorded_at).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'}));
+  const values = bodyRecords.map(r => r[metric]);
+  bodyChartInst = new Chart(document.getElementById('bodyChart'), {
+    type:'line',
+    data:{ labels, datasets:[{ label: metricLabels[metric], data: values, borderColor: metricColors[metric], backgroundColor: metricColors[metric]+'22', tension:0.4, fill:true, pointRadius:4, pointBackgroundColor: metricColors[metric] }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ labels:{ color:'#f1f5f9' } } }, scales:{ x:{ ticks:{ color:'#64748b' }, grid:{ color:'#1e293b' } }, y:{ ticks:{ color:'#64748b' }, grid:{ color:'#1e293b' } } } }
+  });
+}
+
+// ===== STUDENTS =====
+async function loadStudents() {
+  const { data } = await sb.from('profiles').select('*').neq('role','trainer').order('created_at', {ascending:false});
+  const list = document.getElementById('studentList');
+  if (!data?.length) { list.innerHTML = `<div class="empty"><div class="icon">👥</div><div>还没有学员</div></div>`; return; }
+  list.innerHTML = data.map(s => `
+    <div class="student-card">
+      <div class="avatar">${(s.full_name||'?')[0].toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div class="student-name">${s.full_name || '未命名'}</div>
+        <div class="student-email">${s.email}</div>
+        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+          <span class="badge ${s.is_active?'badge-green':'badge-red'}">${s.is_active?'✅ Active':'❌ Inactive'}</span>
+          ${s.health_issues ? `<span class="badge badge-orange">⚠️ 有健康问题</span>` : ''}
+        </div>
+      </div>
+      <div class="student-actions">
+        <button class="btn-sm btn-blue" onclick="viewStudentFood('${s.id}','${s.full_name||s.email}')">📋</button>
+        <button class="btn-sm btn-orange" onclick="editStudent(${JSON.stringify(s).replace(/"/g,'&quot;')})">✏️</button>
+      </div>
+    </div>`).join('');
+}
+
+function openAddStudent() {
+  editingStudentId = null;
+  document.getElementById('modalTitle').textContent = '➕ 添加学员';
+  document.getElementById('modalSaveBtn').textContent = '➕ 创建账号';
+  ['mName','mEmail','mPassword','mHeight','mAge','mWeight','mBodyFat','mMuscle','mFatRate','mHealth'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('mActive').value = 'true';
+  document.getElementById('modalErr').textContent = '';
+  document.getElementById('studentModal').style.display = 'flex';
+}
+
+function editStudent(s) {
+  editingStudentId = s.id;
+  document.getElementById('modalTitle').textContent = '✏️ 编辑学员';
+  document.getElementById('modalSaveBtn').textContent = '💾 保存';
+  document.getElementById('mName').value = s.full_name || '';
+  document.getElementById('mEmail').value = s.email || '';
+  document.getElementById('mPassword').value = '';
+  document.getElementById('mHeight').value = s.height || '';
+  document.getElementById('mAge').value = s.age || '';
+  document.getElementById('mWeight').value = s.weight || '';
+  document.getElementById('mBodyFat').value = s.body_fat || '';
+  document.getElementById('mMuscle').value = s.muscle_mass || '';
+  document.getElementById('mFatRate').value = s.body_fat_rate || '';
+  document.getElementById('mHealth').value = s.health_issues || '';
+  document.getElementById('mActive').value = s.is_active ? 'true' : 'false';
+  document.getElementById('modalErr').textContent = '';
+  document.getElementById('studentModal').style.display = 'flex';
+}
+
+async function saveStudent() {
+  const errEl = document.getElementById('modalErr');
+  const btn = document.getElementById('modalSaveBtn');
+  errEl.textContent = '';
+  const full_name = document.getElementById('mName').value.trim();
+  const email = document.getElementById('mEmail').value.trim();
+  const password = document.getElementById('mPassword').value;
+  const is_active = document.getElementById('mActive').value === 'true';
+  if (!full_name || !email) { errEl.textContent = '请填写姓名和Email'; return; }
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>保存中…';
+
+  if (!editingStudentId) {
+    if (!password || password.length < 6) { errEl.textContent = '请设置至少6位密码'; btn.disabled=false; btn.textContent='➕ 创建账号'; return; }
+    const { data, error } = await sb.auth.signUp({ email, password });
+    if (error) { errEl.textContent = '创建失败：' + error.message; btn.disabled=false; btn.textContent='➕ 创建账号'; return; }
+    if (data.user) {
+      await sb.from('profiles').upsert({
+        id: data.user.id, email, full_name, role:'student', is_active,
+        height: parseFloat(document.getElementById('mHeight').value)||null,
+        age: parseInt(document.getElementById('mAge').value)||null,
+        weight: parseFloat(document.getElementById('mWeight').value)||null,
+        body_fat: parseFloat(document.getElementById('mBodyFat').value)||null,
+        muscle_mass: parseFloat(document.getElementById('mMuscle').value)||null,
+        body_fat_rate: parseFloat(document.getElementById('mFatRate').value)||null,
+        health_issues: document.getElementById('mHealth').value||null,
+        created_at: new Date().toISOString()
+      });
+    }
+  } else {
+    await sb.from('profiles').update({
+      full_name, is_active,
+      height: parseFloat(document.getElementById('mHeight').value)||null,
+      age: parseInt(document.getElementById('mAge').value)||null,
+      weight: parseFloat(document.getElementById('mWeight').value)||null,
+      body_fat: parseFloat(document.getElementById('mBodyFat').value)||null,
+      muscle_mass: parseFloat(document.getElementById('mMuscle').value)||null,
+      body_fat_rate: parseFloat(document.getElementById('mFatRate').value)||null,
+      health_issues: document.getElementById('mHealth').value||null,
+    }).eq('id', editingStudentId);
+  }
+  closeModal();
+  await loadStudents();
+  btn.disabled = false;
+}
+
+function closeModal() { document.getElementById('studentModal').style.display = 'none'; }
+
+async function viewStudentFood(userId, name) {
+  document.getElementById('viewFoodName').textContent = name;
+  const today = new Date().toISOString().split('T')[0];
+  const { data } = await sb.from('food_logs').select('*').eq('user_id', userId).gte('logged_at', today+'T00:00:00').order('logged_at',{ascending:false});
+  const list = document.getElementById('viewFoodList');
+  if (!data?.length) { list.innerHTML = `<div class="empty"><div class="icon">🥗</div><div>今天还没有记录</div></div>`; }
+  else {
+    const totals = data.reduce((a,e)=>({cal:a.cal+(e.calories||0),pro:a.pro+(e.protein||0)}),{cal:0,pro:0});
+    list.innerHTML = `<div style="display:flex;gap:12px;margin-bottom:16px">
+      <div class="stat-card" style="flex:1;text-align:center"><div style="font-size:20px;font-weight:900;color:var(--yellow)">${Math.round(totals.cal)}</div><div style="font-size:11px;color:var(--muted)">kcal</div></div>
+      <div class="stat-card" style="flex:1;text-align:center"><div style="font-size:20px;font-weight:900;color:var(--green)">${Math.round(totals.pro)}g</div><div style="font-size:11px;color:var(--muted)">蛋白质</div></div>
+    </div>` + data.map(e=>`<div class="food-item">
+      <div class="food-emoji">${e.image_url?`<img src="${e.image_url}" alt="">`:('🍽️')}</div>
+      <div><div class="food-name">${e.name}</div><div class="food-meta"><span class="kcal">${Math.round(e.calories)} kcal</span><span>蛋白质 ${Math.round(e.protein)}g</span></div></div>
+    </div>`).join('');
+  }
+  document.getElementById('viewFoodModal').style.display = 'flex';
+}
+function closeViewFood() { document.getElementById('viewFoodModal').style.display = 'none'; }
+
+// ===== AUTO LOGIN =====
+sb.auth.getSession().then(({ data: { session } }) => {
+  if (session?.user) initApp(session.user);
+});
+</script>
+
+</body>
+</html>
