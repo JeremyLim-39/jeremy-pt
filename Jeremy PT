@@ -20,7 +20,7 @@ messagingSenderId: “587332908123”,
 appId: “1:587332908123:web:2a4ed79e7648ef3d047b7e”
 };
 
-const ANTHROPIC_KEY = ‘PASTE_YOUR_API_KEY_HERE’;
+const ANTHROPIC_KEY = ‘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’;
 const TRAINER_EMAIL = ‘jeremyzukang@gmail.com’;
 const GOALS = { calories: 2000, protein: 150, carbs: 200, fat: 65 };
 
